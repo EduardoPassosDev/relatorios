@@ -265,10 +265,8 @@ Para deploy em VPS/Cloud:
 
 ## 👥 Equipe
 
-- [Nome do integrante 1]
-- [Nome do integrante 2]
-- [Nome do integrante 3]
-- [Nome do integrante 4]
+- Eduardo Passos
+- Gustavo Centenno
 
 ## 📅 Data de Entrega
 
