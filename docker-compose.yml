@@ -1,0 +1,136 @@
+version: '3.8'
+
+services:
+  # ================================================
+  # MySQL Database
+  # ================================================
+  mysql:
+    image: mysql:8.0
+    container_name: relatorios-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: pedidos_online_db
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - relatorios-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+
+  # ================================================
+  # RabbitMQ Message Broker
+  # ================================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: relatorios-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "5672:5672"   # Porta AMQP
+      - "15672:15672" # Porta Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - relatorios-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+
+  # ================================================
+  # Spring Boot Application
+  # ================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: relatorios-app
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pedidos_online_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root_password
+      
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: admin123
+      
+      # MailTrap (SUBSTITUA COM SUAS CREDENCIAIS)
+      SPRING_MAIL_HOST: sandbox.smtp.mailtrap.io
+      SPRING_MAIL_PORT: 2525
+      SPRING_MAIL_USERNAME: seu_usuario_mailtrap
+      SPRING_MAIL_PASSWORD: sua_senha_mailtrap
+      
+      # Java Options
+      JAVA_OPTS: -Xms256m -Xmx512m
+    ports:
+      - "8080:8080"
+    networks:
+      - relatorios-network
+    volumes:
+      - app_temp:/tmp/relatorios
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/login"]
+      timeout: 5s
+      retries: 10
+      interval: 15s
+
+  # ================================================
+  # Nginx Reverse Proxy
+  # ================================================
+  nginx:
+    image: nginx:alpine
+    container_name: relatorios-nginx
+    restart: always
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - relatorios-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      timeout: 5s
+      retries: 5
+      interval: 10s
+
+# ================================================
+# Volumes (dados persistentes)
+# ================================================
+volumes:
+  mysql_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  app_temp:
+    driver: local
+
+# ================================================
+# Network
+# ================================================
+networks:
+  relatorios-network:
+    driver: bridge
