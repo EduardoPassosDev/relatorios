@@ -228,110 +228,111 @@
     </style>
 </head>
 <body>
-<div class="header">
-    <div class="header-content">
-        <h1>📊 Sistema de Relatórios</h1>
-        <div class="user-info">
-            <span th:text="'Olá, ' + ${usuario.nome}"></span>
-            <a href="/logout" class="btn-logout">Sair</a>
+    <div class="header">
+        <div class="header-content">
+            <h1>📊 Sistema de Relatórios</h1>
+            <div class="user-info">
+                <span th:text="'Olá, ' + ${usuario.nome}"></span>
+                <a href="/logout" class="btn-logout">Sair</a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container">
-    <!-- Seção de Filtros -->
-    <div class="filter-section">
-        <h2>🔍 Filtrar Vendas</h2>
-        <form method="get" action="/dashboard" class="filter-form">
-            <div class="form-group">
-                <label for="unidade">Unidade</label>
-                <select name="unidade" id="unidade">
-                    <option value="">Todas as unidades</option>
-                    <option th:each="u : ${unidades}"
-                            th:value="${u}"
-                            th:text="${u}"
-                            th:selected="${filtro.unidade == u}"></option>
-                </select>
+    <div class="container">
+        <!-- Seção de Filtros -->
+        <div class="filter-section">
+            <h2>🔍 Filtrar Vendas</h2>
+            <form method="get" action="/dashboard" class="filter-form" th:action="@{/dashboard}">
+                <div class="form-group">
+                    <label for="unidade">Unidade</label>
+                    <select name="unidade" id="unidade">
+                        <option value="">Todas as unidades</option>
+                        <option th:each="u : ${unidades}" 
+                                th:value="${u}" 
+                                th:text="${u}"
+                                th:selected="${filtro.unidade == u}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ano">Ano</label>
+                    <select name="ano" id="ano">
+                        <option value="">Todos os anos</option>
+                        <option th:each="a : ${anos}" 
+                                th:value="${a}" 
+                                th:text="${a}"
+                                th:selected="${filtro.ano == a}"></option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+
+        <!-- Informações e Botão de Relatório -->
+        <div class="info-bar">
+            <div>
+                <span>Total de vendas encontradas: </span>
+                <strong th:text="${totalVendas}"></strong>
+            </div>
+            <form method="post" action="/dashboard/gerar-relatorio" style="margin: 0;" th:action="@{/dashboard/gerar-relatorio}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="unidade" th:value="${filtro.unidade}">
+                <input type="hidden" name="ano" th:value="${filtro.ano}">
+                <button type="submit" class="btn btn-success">
+                    📧 Gerar XLS e Enviar por E-mail
+                </button>
+            </form>
+        </div>
+
+        <!-- Tabela de Vendas -->
+        <div class="table-section">
+            <h2 style="margin-bottom: 20px;">📋 Vendas (Exibindo 8 primeiros registros)</h2>
+            
+            <div th:if="${vendas.isEmpty()}" class="no-data">
+                <p>😕 Nenhuma venda encontrada com os filtros selecionados.</p>
             </div>
 
-            <div class="form-group">
-                <label for="ano">Ano</label>
-                <select name="ano" id="ano">
-                    <option value="">Todos os anos</option>
-                    <option th:each="a : ${anos}"
-                            th:value="${a}"
-                            th:text="${a}"
-                            th:selected="${filtro.ano == a}"></option>
-                </select>
-            </div>
+            <table th:if="${!vendas.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Vendedor</th>
+                        <th>Cliente</th>
+                        <th>Unidade</th>
+                        <th>Valor</th>
+                        <th>Data da Venda</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="venda : ${vendas}">
+                        <td th:text="${venda.id}"></td>
+                        <td th:text="${venda.vendedor}"></td>
+                        <td th:text="${venda.cliente}"></td>
+                        <td th:text="${venda.unidade}"></td>
+                        <td th:text="${venda.valorVendaFormatado}"></td>
+                        <td th:text="${venda.dataVendaFormatada}"></td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </form>
-    </div>
-
-    <!-- Informações e Botão de Relatório -->
-    <div class="info-bar">
-        <div>
-            <span>Total de vendas encontradas: </span>
-            <strong th:text="${totalVendas}"></strong>
-        </div>
-        <form method="post" action="/dashboard/gerar-relatorio" style="margin: 0;">
-            <input type="hidden" name="unidade" th:value="${filtro.unidade}">
-            <input type="hidden" name="ano" th:value="${filtro.ano}">
-            <button type="submit" class="btn btn-success">
-                📧 Gerar XLS e Enviar por E-mail
-            </button>
-        </form>
-    </div>
-
-    <!-- Tabela de Vendas -->
-    <div class="table-section">
-        <h2 style="margin-bottom: 20px;">📋 Vendas (Exibindo 8 primeiros registros)</h2>
-
-        <div th:if="${vendas.isEmpty()}" class="no-data">
-            <p>😕 Nenhuma venda encontrada com os filtros selecionados.</p>
-        </div>
-
-        <table th:if="${!vendas.isEmpty()}">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Vendedor</th>
-                <th>Cliente</th>
-                <th>Unidade</th>
-                <th>Valor</th>
-                <th>Data da Venda</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="venda : ${vendas}">
-                <td th:text="${venda.id}"></td>
-                <td th:text="${venda.vendedor}"></td>
-                <td th:text="${venda.cliente}"></td>
-                <td th:text="${venda.unidade}"></td>
-                <td th:text="${venda.valorVendaFormatado}"></td>
-                <td th:text="${venda.dataVendaFormatada}"></td>
-            </tr>
-            </tbody>
-        </table>
-
-        <!-- Paginação -->
-        <div th:if="${totalPages > 1}" class="pagination">
-            <a th:href="@{/dashboard(unidade=${filtro.unidade}, ano=${filtro.ano}, page=${currentPage - 1})}"
-               th:classappend="${!hasPrevious} ? 'disabled' : ''">
-                ← Anterior
-            </a>
-
-            <span style="padding: 8px 15px;">
+            <!-- Paginação -->
+            <div th:if="${totalPages > 1}" class="pagination">
+                <a th:href="@{/dashboard(unidade=${filtro.unidade}, ano=${filtro.ano}, page=${currentPage - 1})}"
+                   th:classappend="${!hasPrevious} ? 'disabled' : ''">
+                   ← Anterior
+                </a>
+                
+                <span style="padding: 8px 15px;">
                     Página <strong th:text="${currentPage + 1}"></strong> de <strong th:text="${totalPages}"></strong>
                 </span>
-
-            <a th:href="@{/dashboard(unidade=${filtro.unidade}, ano=${filtro.ano}, page=${currentPage + 1})}"
-               th:classappend="${!hasNext} ? 'disabled' : ''">
-                Próxima →
-            </a>
+                
+                <a th:href="@{/dashboard(unidade=${filtro.unidade}, ano=${filtro.ano}, page=${currentPage + 1})}"
+                   th:classappend="${!hasNext} ? 'disabled' : ''">
+                   Próxima →
+                </a>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>
