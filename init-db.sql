@@ -23,6 +23,9 @@ CREATE TABLE usuarios (
 INSERT INTO usuarios (nome, email, senha) 
 VALUES ('Miguel', 'miguel@empresa.com', SHA1('123456'));
 
+INSERT INTO usuarios (nome, email, senha)
+VALUES ('Eduardo Oliveira', 'duducauepo@hotmail.com', SHA1('123456'));
+
 -- ================================================
 -- TABELA: vendas
 -- ================================================
