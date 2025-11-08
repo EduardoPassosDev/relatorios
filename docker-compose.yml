@@ -1,9 +1,5 @@
-version: '3.8'
-
 services:
-  # ================================================
-  # MySQL Database
-  # ================================================
+ 
   mysql:
     image: mysql:8.0
     container_name: relatorios-mysql
@@ -26,9 +22,7 @@ services:
       retries: 10
       interval: 10s
 
-  # ================================================
-  # RabbitMQ Message Broker
-  # ================================================
+ 
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: relatorios-rabbitmq
@@ -37,8 +31,8 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin123
     ports:
-      - "5672:5672"   # Porta AMQP
-      - "15672:15672" # Porta Management UI
+      - "5672:5672"  
+      - "15672:15672" 
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -49,9 +43,6 @@ services:
       retries: 10
       interval: 10s
 
-  # ================================================
-  # Spring Boot Application
-  # ================================================
   app:
     build:
       context: .
@@ -64,24 +55,29 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      # Database
+    
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pedidos_online_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root_password
       
-      # RabbitMQ
+     
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: admin
       SPRING_RABBITMQ_PASSWORD: admin123
       
-      # MailTrap (SUBSTITUA COM SUAS CREDENCIAIS)
+      
       SPRING_MAIL_HOST: sandbox.smtp.mailtrap.io
       SPRING_MAIL_PORT: 2525
-      SPRING_MAIL_USERNAME: seu_usuario_mailtrap
-      SPRING_MAIL_PASSWORD: sua_senha_mailtrap
+      SPRING_MAIL_USERNAME: 2542697a74bacf
+      SPRING_MAIL_PASSWORD: c13ef9716efca0
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: false
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST: sandbox.smtp.mailtrap.io
+      SPRING_MAIL_PROPERTIES_MAIL_DEBUG: true
       
-      # Java Options
+     
       JAVA_OPTS: -Xms256m -Xmx512m
     ports:
       - "8080:8080"
@@ -95,9 +91,7 @@ services:
       retries: 10
       interval: 15s
 
-  # ================================================
-  # Nginx Reverse Proxy
-  # ================================================
+ 
   nginx:
     image: nginx:alpine
     container_name: relatorios-nginx
@@ -117,9 +111,7 @@ services:
       retries: 5
       interval: 10s
 
-# ================================================
-# Volumes (dados persistentes)
-# ================================================
+
 volumes:
   mysql_data:
     driver: local
@@ -128,9 +120,7 @@ volumes:
   app_temp:
     driver: local
 
-# ================================================
-# Network
-# ================================================
+
 networks:
   relatorios-network:
     driver: bridge
