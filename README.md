@@ -32,8 +32,8 @@ Resolver o problema de timeout ao gerar relatórios grandes, processando-os de f
 ### 1. Clone o repositório
 
 ```bash
-git clone <seu-repositorio>
-cd relatorios-async
+git clone https://github.com/EduardoPassosDev/relatorios.git
+cd relatorios
 ```
 
 ### 2. Configure o MailTrap
