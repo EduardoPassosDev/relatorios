@@ -272,10 +272,4 @@ Para deploy em VPS/Cloud:
 
 **16 de Novembro de 2025**
 
-## 📧 Contato
-
-Para dúvidas: paulo.r.santos@cogna.com.br
-
----
-
 **Desenvolvido com ❤️ usando Spring Boot e Docker**
